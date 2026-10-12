@@ -507,3 +507,20 @@
     padding: 22px 20px;
   }
 }
+
+.sign-in-button {
+  margin-left: auto;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  background: var(--purple-600);
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.sign-in-button:hover {
+  background: var(--purple-700);
+}

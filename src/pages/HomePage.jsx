@@ -29,7 +29,7 @@ const helpTopics = [
   },
 ];
 
-function HomePage() {
+function HomePage({ onSignIn }) {
   return (
     <main className="home-page">
       <header className="site-header">
@@ -46,7 +46,13 @@ function HomePage() {
           <a href="#home">Home</a>
           <a href="#help">Help center</a>
           <a href="#about">About</a>
-        </nav>
+          <button
+               className="sign-in-button"
+                   onClick={onSignIn}
+                   >
+                         Sign in
+                   </button>
+            </nav>
       </header>
 
       <section className="hero-section" id="home">
