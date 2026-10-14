@@ -254,7 +254,8 @@
 }
 
 .bubble-two {
-  right: 0;
+  left: 0;
+  right: auto;
   bottom: 34px;
 }
 
@@ -296,57 +297,42 @@
   gap: 16px;
 }
 
+
 .help-card {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  min-height: 190px;
-  padding: 23px 20px;
-  border: 1px solid var(--border);
-  border-radius: 17px;
-  background: var(--surface);
-  color: var(--text-primary);
+  gap: 12px;
+  padding: 28px;
   text-align: left;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
   cursor: pointer;
-  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .help-card:hover {
   transform: translateY(-4px);
-  border-color: var(--purple-200);
-  box-shadow: 0 12px 30px #7c3aed0d;
-}
-
-.help-card-icon {
-  display: grid;
-  place-items: center;
-  width: 46px;
-  height: 46px;
-  margin-bottom: 20px;
-  border-radius: 14px;
-  background: var(--purple-50);
-  font-size: 23px;
+  box-shadow: 0 10px 30px rgba(72, 35, 120, 0.08);
 }
 
 .help-card-title {
-  margin-bottom: 8px;
-  font-size: 13px;
-  font-weight: 750;
+  color: var(--text-primary);
+  font-size: 17px;
+  font-weight: 600;
 }
 
 .help-card-description {
-  max-width: 180px;
   color: var(--text-secondary);
-  font-size: 11px;
+  font-size: 14px;
   line-height: 1.7;
 }
 
 .help-card-arrow {
-  position: absolute;
-  top: 23px;
-  right: 18px;
-  color: #a58bcf;
+  align-self: flex-end;
+  color: var(--purple-600);
   font-size: 18px;
 }
 

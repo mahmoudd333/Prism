@@ -1,28 +1,23 @@
-
 import ChatWidget from "../components/ChatWidget";
 import "./HomePage.css";
 
 const helpTopics = [
   {
-    icon: "📦",
     title: "Orders & tracking",
     description: "Get help finding your order information.",
     message: "How can I track my order?",
   },
   {
-    icon: "🚚",
     title: "Shipping",
     description: "Learn about delivery and shipping fees.",
     message: "Tell me about shipping.",
   },
   {
-    icon: "↩️",
     title: "Returns & refunds",
     description: "Learn about returns and refund policies.",
     message: "What is your return policy?",
   },
   {
-    icon: "🛍️",
     title: "Products",
     description: "Ask questions about products and prices.",
     message: "Tell me about your products.",
@@ -33,11 +28,11 @@ function HomePage({ onSignIn }) {
   return (
     <main className="home-page">
       <header className="site-header">
-        <a className="brand" href="/" aria-label="Luna Support home">
+        <a className="brand" href="/" aria-label="Prism home">
           <span className="brand-icon">✦</span>
 
           <span className="brand-copy">
-            <strong>Luna Support</strong>
+            <strong>Prism</strong>
             <span>Your shopping assistant</span>
           </span>
         </a>
@@ -47,12 +42,12 @@ function HomePage({ onSignIn }) {
           <a href="#help">Help center</a>
           <a href="#about">About</a>
           <button
-               className="sign-in-button"
-                   onClick={onSignIn}
-                   >
-                         Sign in
-                   </button>
-            </nav>
+            className="sign-in-button"
+            onClick={onSignIn}
+          >
+            Sign in
+          </button>
+        </nav>
       </header>
 
       <section className="hero-section" id="home">
@@ -139,13 +134,14 @@ function HomePage({ onSignIn }) {
                 )
               }
             >
-              <span className="help-card-icon">{topic.icon}</span>
               <span className="help-card-title">
                 {topic.title}
               </span>
+
               <span className="help-card-description">
                 {topic.description}
               </span>
+
               <span className="help-card-arrow">↗</span>
             </button>
           ))}
@@ -177,7 +173,7 @@ function HomePage({ onSignIn }) {
 
       <footer className="site-footer">
         <a className="footer-brand" href="#home">
-          ✦ Luna Support
+          ✦ Prism
         </a>
         <span>Here to make things easier.</span>
       </footer>
