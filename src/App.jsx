@@ -3,6 +3,7 @@ import HomePage from "./pages/HomePage";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import KnowledgeBase from "./pages/KnowledgeBase";
+import AdminAnalytics from "./pages/AdminAnalytics";
 
 function App() {
   const [currentPage, setCurrentPage] = useState("home");
@@ -29,9 +30,17 @@ function App() {
       <AdminDashboard
         onLogout={() => setCurrentPage("home")}
         onOpenKnowledgeBase={() => setCurrentPage("knowledge-base")}
+        onOpenAnalytics={() => setCurrentPage("admin-analytics")}
       />
     );
   }
+   if (currentPage === "admin-analytics") {
+  return (
+    <AdminAnalytics
+      onBack={() => setCurrentPage("admin-dashboard")}
+    />
+  );
+}
 
   return (
     <HomePage onSignIn={() => setCurrentPage("admin-login")} />

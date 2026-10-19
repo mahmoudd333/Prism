@@ -1,6 +1,6 @@
 import "./AdminDashboard.css";
 
-function AdminDashboard({ onLogout, onOpenKnowledgeBase }) {
+function AdminDashboard({ onLogout, onOpenKnowledgeBase, onOpenAnalytics }) {
   function showComingSoon(feature) {
     alert(`${feature} page will be added later.`);
   }
@@ -57,10 +57,9 @@ function AdminDashboard({ onLogout, onOpenKnowledgeBase }) {
 
           <button
             className="admin-option-card"
-            onClick={() => showComingSoon("Admin Analytics")}
+            onClick={onOpenAnalytics}
           >
             <span className="admin-option-number">02</span>
-
             <span className="admin-option-icon analytics-icon">
               <span />
               <span />
