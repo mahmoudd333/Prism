@@ -112,15 +112,7 @@ function ChatWidget() {
     event.preventDefault();
     sendMessage(input);
   }
-
-  function handleReset() {
-    requestIdRef.current += 1;
-    isTypingRef.current = false;
-    setIsTyping(false);
-    setMessages([welcomeMessage]);
-    setInput("");
-  }
-
+  
   return (
     <>
       {isOpen && (
@@ -140,14 +132,6 @@ function ChatWidget() {
             </div>
 
             <div className="chat-header-actions">
-              <button
-                className="chat-header-icon"
-                onClick={handleReset}
-                aria-label="Start a new conversation"
-                title="New conversation"
-              >
-                ↻
-              </button>
 
               <button
                 className="chat-header-icon"
