@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from "react";
 import { sendMessageToAI } from "../services/chatService";
 import "./ChatWidget.css";

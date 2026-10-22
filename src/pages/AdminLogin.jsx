@@ -1,4 +1,3 @@
-
 import "./AdminLogin.css";
 
 function AdminLogin({ onLogin, onBack }) {

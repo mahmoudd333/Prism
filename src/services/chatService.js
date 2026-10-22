@@ -1,4 +1,3 @@
-
 const temporaryReplies = [
   "Thanks for your question! I'm a demo assistant for now. Once the AI model is connected, I'll be able to give you more accurate answers.",
   "That's a great question! Soon, I'll be able to answer using the store's FAQs, policies, and product information.",
