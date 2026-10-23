@@ -1,0 +1,545 @@
+.analytics-page {
+  min-height: 100vh;
+  background: var(--page-background, #faf8ff);
+  color: var(--text-primary, #291943);
+}
+
+.analytics-header {
+  min-height: 76px;
+  padding: 16px 6%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  background: var(--surface, #fff);
+  border-bottom: 1px solid var(--border, #eee6f8);
+}
+
+.analytics-back {
+  padding: 9px 0;
+  border: 0;
+  background: transparent;
+  color: var(--purple-700, #6d28d9);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.analytics-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.analytics-brand-mark {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--purple-600, #7c3aed);
+  color: white;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.analytics-brand strong,
+.analytics-brand small {
+  display: block;
+}
+
+.analytics-brand strong {
+  font-size: 15px;
+}
+
+.analytics-brand small {
+  margin-top: 3px;
+  color: var(--text-secondary, #7d718d);
+  font-size: 12px;
+}
+
+.analytics-content {
+  width: min(100% - 40px, 1100px);
+  margin: 0 auto;
+  padding: 44px 0 72px;
+}
+
+.analytics-heading {
+  margin-bottom: 28px;
+}
+
+.analytics-eyebrow {
+  margin: 0 0 10px;
+  color: var(--purple-600, #7c3aed);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.8px;
+}
+
+.analytics-heading h1 {
+  margin: 0;
+  font-size: clamp(29px, 4vw, 40px);
+  letter-spacing: -1.2px;
+}
+
+.analytics-heading > p:last-child {
+  max-width: 650px;
+  margin-top: 12px;
+  color: var(--text-secondary, #7d718d);
+  line-height: 1.7;
+}
+
+.analytics-tabs {
+  display: flex;
+  gap: 22px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--border, #eee6f8);
+  margin-bottom: 24px;
+}
+
+.analytics-tabs button {
+  flex-shrink: 0;
+  padding: 13px 2px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--text-secondary, #7d718d);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.analytics-tabs button.active {
+  border-bottom-color: var(--purple-600, #7c3aed);
+  color: var(--purple-700, #6d28d9);
+}
+
+.analytics-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.analytics-stat {
+  min-width: 0;
+  padding: 20px;
+  background: var(--surface, #fff);
+  border: 1px solid var(--border, #eee6f8);
+  border-radius: 15px;
+}
+
+.analytics-stat > span,
+.analytics-stat > strong,
+.analytics-stat > small {
+  display: block;
+}
+
+.analytics-stat > span {
+  min-height: 34px;
+  color: var(--text-secondary, #7d718d);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.analytics-stat > strong {
+  margin: 12px 0 7px;
+  font-size: 30px;
+}
+
+.analytics-stat > small {
+  color: var(--text-secondary, #7d718d);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.analytics-panel {
+  margin-top: 22px;
+  padding: 25px;
+  border: 1px solid var(--border, #eee6f8);
+  border-radius: 17px;
+  background: var(--surface, #fff);
+  box-shadow: 0 8px 30px rgba(50, 24, 93, 0.035);
+}
+
+.analytics-panel-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.analytics-panel-heading h2 {
+  margin: 0;
+  font-size: 19px;
+}
+
+.analytics-panel-heading p {
+  margin: 7px 0 0;
+  color: var(--text-secondary, #7d718d);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.analytics-demo-label {
+  flex-shrink: 0;
+  padding: 7px 10px;
+  border-radius: 7px;
+  background: var(--purple-50, #f7f2ff);
+  color: var(--purple-700, #6d28d9);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.analytics-question-list {
+  display: grid;
+}
+
+.analytics-question {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 17px 0;
+  border-bottom: 1px solid var(--border, #eee6f8);
+}
+
+.analytics-question:last-child {
+  border-bottom: 0;
+}
+
+.analytics-rank {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: var(--purple-50, #f7f2ff);
+  color: var(--purple-700, #6d28d9);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.analytics-question-copy {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.analytics-question-copy strong {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.analytics-question-copy > span {
+  color: var(--text-secondary, #7d718d);
+  font-size: 11px;
+}
+
+.analytics-question-count {
+  flex-shrink: 0;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: right;
+}
+
+.analytics-question-count small {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-secondary, #7d718d);
+  font-size: 10px;
+  font-weight: 400;
+}
+
+.analytics-filters {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.analytics-filters input,
+.analytics-filters select,
+.analytics-message-actions select {
+  min-width: 0;
+  padding: 11px 12px;
+  border: 1px solid var(--border, #eee6f8);
+  border-radius: 9px;
+  background: white;
+  color: var(--text-primary, #291943);
+  font: inherit;
+  font-size: 12px;
+}
+
+.analytics-filters input {
+  flex: 1;
+}
+
+.analytics-filters input:focus,
+.analytics-filters select:focus,
+.analytics-message-actions select:focus {
+  outline: 2px solid var(--purple-200, #ddccff);
+  border-color: var(--purple-500, #8b5cf6);
+}
+
+.analytics-history-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.9fr) minmax(0, 1.3fr);
+  min-height: 430px;
+  border: 1px solid var(--border, #eee6f8);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.analytics-conversation-list {
+  min-width: 0;
+  border-right: 1px solid var(--border, #eee6f8);
+}
+
+.analytics-conversation {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 17px;
+  border: 0;
+  border-bottom: 1px solid var(--border, #eee6f8);
+  background: white;
+  color: var(--text-primary, #291943);
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.analytics-conversation:hover,
+.analytics-conversation.selected {
+  background: var(--purple-50, #f7f2ff);
+}
+
+.analytics-conversation-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.analytics-conversation-top > strong {
+  font-size: 12px;
+}
+
+.analytics-conversation-id,
+.analytics-conversation-date {
+  color: var(--text-secondary, #7d718d);
+  font-size: 10px;
+}
+
+.analytics-conversation-preview {
+  overflow: hidden;
+  color: var(--text-secondary, #7d718d);
+  font-size: 12px;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.analytics-status {
+  display: inline-block;
+  width: fit-content;
+  padding: 5px 7px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.analytics-status.resolved {
+  background: #eaf8f0;
+  color: #21794d;
+}
+
+.analytics-status.needs-support {
+  background: #fff2e4;
+  color: #985517;
+}
+
+.analytics-message-panel {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+.analytics-message-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border, #eee6f8);
+}
+
+.analytics-message-heading h3 {
+  margin: 0 0 5px;
+  font-size: 14px;
+}
+
+.analytics-message-heading > div > span {
+  color: var(--text-secondary, #7d718d);
+  font-size: 11px;
+}
+
+.analytics-messages {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 15px;
+  padding: 22px 0;
+}
+
+.analytics-message {
+  max-width: 92%;
+}
+
+.analytics-message > span {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--text-secondary, #7d718d);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.analytics-message p {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 12px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.customer-message p {
+  border: 1px solid var(--border, #eee6f8);
+  background: #fff;
+}
+
+.assistant-message {
+  align-self: flex-end;
+}
+
+.assistant-message > span {
+  text-align: right;
+}
+
+.assistant-message p {
+  background: var(--purple-50, #f7f2ff);
+  color: var(--purple-900, #32185d);
+}
+
+.analytics-message-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 15px;
+  border-top: 1px solid var(--border, #eee6f8);
+}
+
+.analytics-message-actions label {
+  color: var(--text-secondary, #7d718d);
+  font-size: 12px;
+}
+
+.analytics-empty {
+  padding: 25px 15px;
+  color: var(--text-secondary, #7d718d);
+  font-size: 13px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.analytics-demo-note {
+  margin-top: 18px;
+  color: var(--text-secondary, #7d718d);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.analytics-page button:focus-visible {
+  outline: 3px solid var(--purple-200, #ddccff);
+  outline-offset: 2px;
+}
+
+@media (max-width: 850px) {
+  .analytics-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .analytics-history-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .analytics-conversation-list {
+    max-height: 340px;
+    overflow-y: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--border, #eee6f8);
+  }
+
+  .analytics-message-panel {
+    min-height: 300px;
+  }
+}
+
+@media (max-width: 600px) {
+  .analytics-header {
+    align-items: flex-start;
+    flex-direction: column-reverse;
+    gap: 12px;
+    padding: 14px 20px;
+  }
+
+  .analytics-content {
+    width: calc(100% - 28px);
+    padding-top: 30px;
+  }
+
+  .analytics-tabs {
+    gap: 18px;
+  }
+
+  .analytics-panel {
+    padding: 17px;
+  }
+
+  .analytics-stats {
+    gap: 10px;
+  }
+
+  .analytics-stat {
+    padding: 15px;
+  }
+
+  .analytics-stat > strong {
+    font-size: 25px;
+  }
+
+  .analytics-filters {
+    flex-direction: column;
+  }
+
+  .analytics-question {
+    gap: 10px;
+  }
+
+  .analytics-question-count {
+    font-size: 12px;
+  }
+}
