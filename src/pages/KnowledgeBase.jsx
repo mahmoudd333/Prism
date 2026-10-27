@@ -1,96 +1,181 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./KnowledgeBase.css";
 
 const categories = ["FAQ", "Policy", "Product"];
+const API_URL = "http://localhost:5000";
 
 function KnowledgeBase({ onBack }) {
   const [activeTab, setActiveTab] = useState("FAQ");
   const [entries, setEntries] = useState([]);
-  const [files, setFiles] = useState([]);
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [notice, setNotice] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const fileInputRef = useRef(null);
 
-  function addEntry(event) {
-    event.preventDefault();
+  const files = entries.filter((entry) => entry.sourceType === "file");
+  const manualEntries = entries.filter(
+    (entry) => entry.sourceType !== "file"
+  );
 
-    let entry;
+  async function apiRequest(url, options = {}) {
+    const token = sessionStorage.getItem("prismAdminToken");
 
-    if (activeTab === "FAQ") {
-      entry = {
-        id: crypto.randomUUID(),
-        category: "FAQ",
-        title: question.trim(),
-        content: answer.trim(),
-      };
-    } else {
-      entry = {
-        id: crypto.randomUUID(),
-        category: activeTab,
-        title: title.trim(),
-        content: description.trim(),
-        ...(activeTab === "Product" ? { price: price.trim() } : {}),
-      };
+    if (!token) {
+      throw new Error("Your session has expired. Please sign in again.");
     }
+
+    const response = await fetch(`${API_URL}${url}`, {
+      ...options,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        ...(options.body instanceof FormData
+          ? {}
+          : { "Content-Type": "application/json" }),
+        ...options.headers,
+      },
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (response.status === 401) {
+      sessionStorage.removeItem("prismAdminToken");
+      throw new Error("Your session has expired. Please sign in again.");
+    }
+
+    if (!response.ok) {
+      throw new Error(data.message || "The request failed.");
+    }
+
+    return data;
+  }
+
+  async function loadEntries() {
+    setLoading(true);
+
+    try {
+      const data = await apiRequest("/api/knowledge");
+      setEntries(data);
+    } catch (error) {
+      setNotice(error.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadEntries();
+  }, []);
+
+  async function addEntry(event) {
+    event.preventDefault();
+    setNotice("");
+    setSaving(true);
+
+    const entry = activeTab === "FAQ"
+      ? {
+          category: "FAQ",
+          title: question.trim(),
+          content: answer.trim(),
+        }
+      : {
+          category: activeTab,
+          title: title.trim(),
+          content: description.trim(),
+          ...(activeTab === "Product" ? { price: price.trim() } : {}),
+        };
 
     if (
       !entry.title ||
       !entry.content ||
-      (activeTab === "Product" && !price.trim())
+      (activeTab === "Product" && !entry.price)
     ) {
       setNotice("Please complete all required fields.");
+      setSaving(false);
       return;
     }
 
-    setEntries((previous) => [entry, ...previous]);
-    setQuestion("");
-    setAnswer("");
-    setTitle("");
-    setDescription("");
-    setPrice("");
-    setNotice("Entry added successfully.");
-  }
+    try {
+      const savedEntry = await apiRequest("/api/knowledge", {
+        method: "POST",
+        body: JSON.stringify(entry),
+      });
 
-  function handleFiles(event) {
-    const selected = Array.from(event.target.files || []);
-
-    setFiles((previous) => [
-      ...previous,
-      ...selected.map((file) => ({
-        id: crypto.randomUUID(),
-        name: file.name,
-        size: file.size,
-      })),
-    ]);
-
-    if (selected.length) {
-      setNotice(
-        "Files selected for this demo. They have not been uploaded to a server."
-      );
+      setEntries((previous) => [savedEntry, ...previous]);
+      setQuestion("");
+      setAnswer("");
+      setTitle("");
+      setDescription("");
+      setPrice("");
+      setNotice("Entry saved successfully to the database.");
+    } catch (error) {
+      setNotice(error.message);
+    } finally {
+      setSaving(false);
     }
+  }
 
+  async function handleFiles(event) {
+    const selected = Array.from(event.target.files || []);
     event.target.value = "";
+
+    if (!selected.length) return;
+
+    setNotice("");
+    setSaving(true);
+
+    try {
+      const formData = new FormData();
+
+      selected.forEach((file) => {
+        formData.append("files", file);
+      });
+
+      const data = await apiRequest("/api/knowledge/files", {
+        method: "POST",
+        body: formData,
+      });
+
+      setEntries((previous) => [...data.entries, ...previous]);
+      setNotice(data.message);
+    } catch (error) {
+      setNotice(error.message);
+      await loadEntries();
+    } finally {
+      setSaving(false);
+    }
   }
 
-  function removeEntry(id) {
-    setEntries((previous) => previous.filter((entry) => entry.id !== id));
-    setNotice("Entry deleted.");
-  }
+  async function removeEntry(id) {
+    setNotice("");
 
-  function removeFile(id) {
-    setFiles((previous) => previous.filter((file) => file.id !== id));
-    setNotice("File removed from the list.");
+    try {
+      await apiRequest(`/api/knowledge/${id}`, {
+        method: "DELETE",
+      });
+
+      setEntries((previous) =>
+        previous.filter((entry) => entry._id !== id)
+      );
+      setNotice("Entry deleted from the database.");
+    } catch (error) {
+      setNotice(error.message);
+    }
   }
 
   return (
     <main className="knowledge-page">
       <header className="knowledge-header">
-        <button className="knowledge-back" onClick={onBack}>
-          ← Back to dashboard
+        <button
+          type="button"
+          className="knowledge-back"
+          onClick={onBack}
+        >
+          Back to dashboard
         </button>
 
         <div className="knowledge-brand">
@@ -118,13 +203,13 @@ function KnowledgeBase({ onBack }) {
             <strong>{entries.length}</strong>
           </div>
           <div className="knowledge-stat">
-            <span>Selected documents</span>
+            <span>Saved documents</span>
             <strong>{files.length}</strong>
           </div>
           <div className="knowledge-stat">
             <span>Categories used</span>
             <strong>
-              {new Set(entries.map((entry) => entry.category)).size}
+              {new Set(manualEntries.map((entry) => entry.category)).size}
             </strong>
           </div>
         </div>
@@ -134,7 +219,8 @@ function KnowledgeBase({ onBack }) {
             <div>
               <h2>Upload documents</h2>
               <p>
-                Select documents containing FAQs, policies, or product details.
+                Upload PDF, TXT, or DOCX files. Prism will extract their
+                text and save it to your knowledge base.
               </p>
             </div>
           </div>
@@ -143,10 +229,11 @@ function KnowledgeBase({ onBack }) {
             type="button"
             className="knowledge-upload-zone"
             onClick={() => fileInputRef.current?.click()}
+            disabled={saving}
           >
             <span className="knowledge-upload-icon">↑</span>
-            <strong>Choose files to upload</strong>
-            <span>PDF, TXT, DOC, or DOCX</span>
+            <strong>{saving ? "Processing..." : "Choose files to upload"}</strong>
+            <span>PDF, TXT, or DOCX · Up to 5 MB per file</span>
             <span className="knowledge-upload-button">Browse files</span>
           </button>
 
@@ -154,28 +241,27 @@ function KnowledgeBase({ onBack }) {
             ref={fileInputRef}
             className="knowledge-file-input"
             type="file"
-            accept=".pdf,.txt,.doc,.docx"
+            accept=".pdf,.txt,.docx"
             multiple
             onChange={handleFiles}
+            disabled={saving}
           />
 
           {files.length > 0 && (
             <div className="knowledge-file-list">
               {files.map((file) => (
-                <div className="knowledge-file" key={file.id}>
+                <div className="knowledge-file" key={file._id}>
                   <span className="knowledge-file-mark">DOC</span>
                   <div className="knowledge-file-details">
-                    <strong>{file.name}</strong>
-                    <span>
-                      {(file.size / 1024).toFixed(1)} KB · Selected locally
-                    </span>
+                    <strong>{file.fileName || file.title}</strong>
+                    <span>Text extracted and saved to database</span>
                   </div>
                   <button
                     type="button"
                     className="knowledge-remove"
-                    onClick={() => removeFile(file.id)}
+                    onClick={() => removeEntry(file._id)}
                   >
-                    Remove
+                    Delete
                   </button>
                 </div>
               ))}
@@ -284,9 +370,17 @@ function KnowledgeBase({ onBack }) {
             )}
 
             <div className="knowledge-form-footer">
-              <span>Demo only: entries are not saved to a database.</span>
-              <button className="knowledge-save-button" type="submit">
-                Add {activeTab}
+              <span>
+                {saving
+                  ? "Saving..."
+                  : "Entries are saved to MongoDB Atlas."}
+              </span>
+              <button
+                className="knowledge-save-button"
+                type="submit"
+                disabled={saving}
+              >
+                {saving ? "Saving..." : `Add ${activeTab}`}
               </button>
             </div>
           </form>
@@ -296,20 +390,26 @@ function KnowledgeBase({ onBack }) {
           <div className="knowledge-panel-heading">
             <div>
               <h2>Knowledge entries</h2>
-              <p>Review and manage the information you have added.</p>
+              <p>Review and manage your saved information.</p>
             </div>
-            <span className="knowledge-count">{entries.length} entries</span>
+            <span className="knowledge-count">
+              {manualEntries.length} entries
+            </span>
           </div>
 
-          {entries.length === 0 ? (
+          {loading ? (
+            <div className="knowledge-empty">
+              <p>Loading saved entries...</p>
+            </div>
+          ) : manualEntries.length === 0 ? (
             <div className="knowledge-empty">
               <strong>No entries yet</strong>
               <p>Your FAQs, policies, and products will appear here.</p>
             </div>
           ) : (
             <div className="knowledge-entry-list">
-              {entries.map((entry) => (
-                <article className="knowledge-entry" key={entry.id}>
+              {manualEntries.map((entry) => (
+                <article className="knowledge-entry" key={entry._id}>
                   <div className="knowledge-entry-top">
                     <span className="knowledge-category">
                       {entry.category}
@@ -317,7 +417,7 @@ function KnowledgeBase({ onBack }) {
                     <button
                       type="button"
                       className="knowledge-remove"
-                      onClick={() => removeEntry(entry.id)}
+                      onClick={() => removeEntry(entry._id)}
                     >
                       Delete
                     </button>
@@ -327,7 +427,9 @@ function KnowledgeBase({ onBack }) {
                   <p>{entry.content}</p>
 
                   {entry.price && (
-                    <strong className="knowledge-price">{entry.price}</strong>
+                    <strong className="knowledge-price">
+                      {entry.price}
+                    </strong>
                   )}
                 </article>
               ))}
