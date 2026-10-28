@@ -1,3 +1,8 @@
+const {
+  indexKnowledgeEntry,
+  removeKnowledgeEntry,
+} = require("../services/ragService");
+
 const express = require("express");
 const multer = require("multer");
 const pdfParse = require("pdf-parse");
@@ -71,7 +76,7 @@ router.post("/", async (req, res) => {
       sourceType: "manual",
       uploadedBy: req.adminId,
     });
-
+    await indexKnowledgeEntry(entry);
     res.status(201).json(entry);
   } catch (error) {
     console.error("Save knowledge entry error:", error.message);
@@ -141,7 +146,7 @@ router.post("/files", (req, res, next) => {
         fileName: file.originalname,
         uploadedBy: req.adminId,
       });
-
+      await indexKnowledgeEntry(entry);
       createdEntries.push(entry);
     }
 
@@ -157,9 +162,10 @@ router.post("/files", (req, res, next) => {
   }
 });
 
+
 router.delete("/:id", async (req, res) => {
   try {
-    const entry = await KnowledgeEntry.findOneAndDelete({
+    const entry = await KnowledgeEntry.findOne({
       _id: req.params.id,
       uploadedBy: req.adminId,
     });
@@ -170,15 +176,26 @@ router.delete("/:id", async (req, res) => {
       });
     }
 
-    res.json({ message: "Knowledge entry deleted successfully." });
+    await removeKnowledgeEntry(entry._id);
+    await entry.deleteOne();
+
+    return res.json({
+      message: "Knowledge entry and its chunks deleted successfully.",
+    });
   } catch (error) {
     if (error.name === "CastError") {
-      return res.status(400).json({ message: "Invalid entry ID." });
+      return res.status(400).json({
+        message: "Invalid knowledge entry ID.",
+      });
     }
 
     console.error("Delete knowledge entry error:", error.message);
-    res.status(500).json({ message: "Unable to delete this entry." });
+
+    return res.status(500).json({
+      message: "Failed to delete the knowledge entry.",
+    });
   }
 });
+
 
 module.exports = router;
