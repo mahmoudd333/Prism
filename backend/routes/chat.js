@@ -31,7 +31,7 @@ router.post("/", async (req, res) => {
     const matches = await KnowledgeChunk.aggregate([
       {
         $vectorSearch: {
-          index: "prism_vector_index",
+          index: "prism_index",
           path: "embedding",
           queryVector: queryEmbedding,
           numCandidates: 100,
@@ -50,7 +50,7 @@ router.post("/", async (req, res) => {
         },
       },
     ]);
-
+         
     return res.json({
       question,
       results: matches.map((match) => ({
