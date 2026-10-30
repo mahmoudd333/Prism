@@ -7,6 +7,8 @@
   color: var(--text-primary);
 }
 
+/* Header */
+
 .site-header {
   display: flex;
   align-items: center;
@@ -32,7 +34,8 @@
   border-radius: 13px;
   background: var(--purple-600);
   color: white;
-  font-size: 25px;
+  font-size: 20px;
+  font-weight: 700;
   box-shadow: 0 6px 16px #7c3aed25;
 }
 
@@ -55,19 +58,26 @@
 .site-nav {
   display: flex;
   align-items: center;
-  gap: 30px;
+  gap: 20px;
 }
 
-.site-nav a {
-  color: #756687;
-  font-size: 13px;
-  text-decoration: none;
-  transition: color 0.2s;
+.sign-in-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  background: var(--purple-600);
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
 }
 
-.site-nav a:hover {
-  color: var(--purple-600);
+.sign-in-button:hover {
+  background: var(--purple-700);
 }
+
+/* Hero section */
 
 .hero-section {
   display: grid;
@@ -94,10 +104,6 @@
   letter-spacing: 1.7px;
 }
 
-.hero-sparkle {
-  font-size: 18px;
-}
-
 .hero-content h1 {
   margin: 23px 0 20px;
   color: var(--purple-900);
@@ -117,6 +123,8 @@
   font-size: 15px;
   line-height: 1.9;
 }
+
+/* Buttons */
 
 .primary-button,
 .secondary-button {
@@ -158,6 +166,8 @@
   background: var(--success);
 }
 
+/* Decorative illustration */
+
 .hero-art {
   position: relative;
   display: grid;
@@ -171,12 +181,12 @@
   z-index: -1;
   border: 1px solid #d9c6ff;
   border-radius: 50%;
-  transform: rotate(-20deg);
 }
 
 .orbit-one {
   width: 310px;
   height: 245px;
+  transform: rotate(-20deg);
 }
 
 .orbit-two {
@@ -184,6 +194,13 @@
   height: 310px;
   border-color: #e7dcfa;
   transform: rotate(28deg);
+}
+
+.orbit-three {
+  width: 260px;
+  height: 340px;
+  border-color: #e9ddff;
+  transform: rotate(65deg);
 }
 
 .art-center {
@@ -194,69 +211,47 @@
   border: 14px solid #ffffff9c;
   border-radius: 46px;
   background: linear-gradient(145deg, #a78bfa, #6d28d9);
-  color: white;
-  font-size: 75px;
   box-shadow: 0 25px 65px #7c3aed45;
   transform: rotate(-8deg);
 }
 
-.art-card,
-.art-bubble {
+.art-center-inner {
+  width: 58px;
+  height: 58px;
+  border: 3px solid #ffffffd9;
+  border-radius: 18px;
+  transform: rotate(45deg);
+}
+
+.art-dot {
   position: absolute;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  border: 1px solid #eee6f8;
-  border-radius: 16px;
-  background: #ffffffed;
-  box-shadow: 0 12px 35px #3b205e12;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #a78bfa;
+  box-shadow: 0 0 0 7px #a78bfa20;
 }
 
-.art-card {
-  top: 22px;
-  left: 0;
-  padding: 15px;
+.dot-one {
+  top: 50px;
+  right: 65px;
 }
 
-.art-card-icon {
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 13px;
-  background: var(--purple-100);
-  color: var(--purple-600);
-  font-size: 25px;
+.dot-two {
+  bottom: 55px;
+  left: 55px;
+  width: 9px;
+  height: 9px;
 }
 
-.art-card strong {
-  font-size: 12px;
+.dot-three {
+  top: 145px;
+  left: 35px;
+  width: 7px;
+  height: 7px;
 }
 
-.art-card p {
-  margin: 5px 0 0;
-  color: var(--text-secondary);
-  font-size: 10px;
-}
-
-.art-bubble {
-  padding: 12px 16px;
-  color: var(--purple-900);
-  font-size: 11px;
-}
-
-.bubble-one {
-  top: 105px;
-  right: -5px;
-  background: var(--purple-600);
-  color: white;
-}
-
-.bubble-two {
-  left: 0;
-  right: auto;
-  bottom: 34px;
-}
+/* Help section */
 
 .help-section {
   max-width: 1160px;
@@ -290,50 +285,28 @@
   line-height: 1.8;
 }
 
-.help-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
-}
+/* Non-clickable help topics */
 
-
-.help-card {
-  position: relative;
+.help-topics {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 28px;
-  text-align: left;
-  border: 1px solid var(--border);
-  border-radius: 16px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 35px;
+}
+
+.help-topic {
+  padding: 12px 20px;
+  border: 1px solid var(--purple-100);
+  border-radius: 30px;
   background: var(--surface);
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.help-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 30px rgba(72, 35, 120, 0.08);
-}
-
-.help-card-title {
-  color: var(--text-primary);
-  font-size: 17px;
+  color: var(--purple-700);
+  font-size: 13px;
   font-weight: 600;
 }
 
-.help-card-description {
-  color: var(--text-secondary);
-  font-size: 14px;
-  line-height: 1.7;
-}
-
-.help-card-arrow {
-  align-self: flex-end;
-  color: var(--purple-600);
-  font-size: 18px;
-}
+/* Contact section */
 
 .contact-section {
   display: flex;
@@ -356,7 +329,8 @@
   border-radius: 16px;
   background: white;
   color: var(--purple-600);
-  font-size: 30px;
+  font-size: 22px;
+  font-weight: 700;
 }
 
 .contact-copy {
@@ -381,6 +355,8 @@
   padding: 13px 17px;
 }
 
+/* Footer */
+
 .site-footer {
   display: flex;
   align-items: center;
@@ -400,6 +376,8 @@
   text-decoration: none;
 }
 
+/* Tablet */
+
 @media (max-width: 850px) {
   .hero-section {
     grid-template-columns: 1fr;
@@ -416,8 +394,8 @@
     margin-top: 15px;
   }
 
-  .help-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .help-topics {
+    gap: 10px;
   }
 
   .contact-section {
@@ -426,21 +404,11 @@
   }
 }
 
+/* Mobile */
+
 @media (max-width: 520px) {
   .site-header {
     padding: 18px 20px;
-  }
-
-  .site-nav {
-    gap: 14px;
-  }
-
-  .site-nav a {
-    font-size: 11px;
-  }
-
-  .site-nav a:last-child {
-    display: none;
   }
 
   .hero-section {
@@ -460,17 +428,13 @@
     padding: 25px 20px 55px;
   }
 
-  .help-grid {
-    gap: 11px;
+  .help-topics {
+    gap: 9px;
   }
 
-  .help-card {
-    min-height: 180px;
-    padding: 17px 13px;
-  }
-
-  .help-card-title {
-    font-size: 12px;
+  .help-topic {
+    padding: 10px 14px;
+    font-size: 11px;
   }
 
   .contact-section {
@@ -491,21 +455,4 @@
   .site-footer {
     padding: 22px 20px;
   }
-}
-
-.sign-in-button {
-  margin-left: auto;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 10px;
-  background: var(--purple-600);
-  color: white;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.sign-in-button:hover {
-  background: var(--purple-700);
 }
