@@ -59,6 +59,15 @@ router.post("/", async (req, res) => {
       },
     ]);
 
+    console.log(
+      "Prism retrieval results:",
+      matches.map((match) => ({
+        title: match.title,
+        category: match.category,
+        score: match.score,
+      }))
+    );
+
     const relevantMatches = matches.filter(
       (match) => match.score >= minimumScore
     );
@@ -75,7 +84,8 @@ router.post("/", async (req, res) => {
     const context = relevantMatches
       .map(
         (match, index) =>
-          `Source ${index + 1}:
+          `Source ID: ${String(match.knowledgeEntryId)}
+Source ${index + 1}:
 Title: ${match.title}
 Category: ${match.category}
 Content: ${match.content}`
@@ -88,7 +98,29 @@ Content: ${match.content}`
 ${question}
 
 Knowledge base context:
-${context}`,
+${context}
+
+Available source IDs:
+${[
+  ...new Set(
+    relevantMatches.map((match) => String(match.knowledgeEntryId))
+  ),
+].join(", ")}
+
+Return a JSON object with exactly these fields:
+{
+  "answer": "Your answer to the customer",
+  "sourceIds": ["IDs of the knowledge base entries that directly support your answer"]
+}
+
+Important:
+- Use only information supported by the knowledge base context.
+- Select only source IDs that directly support your answer.
+- Do not select a source just because it was retrieved.
+- If the context does not answer the question, explain that the information could not be found and return an empty sourceIds array.
+- Never invent source IDs.
+- Do not include unrelated sources.
+- Do not return Markdown or text outside the JSON object.`,
       config: {
         systemInstruction: `You are Prism, a helpful e-commerce customer support assistant.
 
@@ -101,28 +133,53 @@ Rules:
 - Answer clearly and naturally, using concise language.
 - Do not claim to have performed actions such as placing orders or issuing refunds.`,
         temperature: 0.2,
-        maxOutputTokens: 400,
+        maxOutputTokens: 500,
+        responseMimeType: "application/json",
       },
     });
 
-    const answer = response.text?.trim();
+    const result = JSON.parse(response.text || "{}");
+
+    const answer =
+      typeof result.answer === "string" ? result.answer.trim() : "";
 
     if (!answer) {
       throw new Error("Gemini returned an empty answer.");
     }
 
+    const selectedSourceIds = new Set(
+      Array.isArray(result.sourceIds)
+        ? result.sourceIds.map(String)
+        : []
+    );
+
+    const uniqueSources = new Map();
+
+    relevantMatches.forEach((match) => {
+      const sourceId = String(match.knowledgeEntryId);
+
+      if (
+        selectedSourceIds.has(sourceId) &&
+        !uniqueSources.has(sourceId)
+      ) {
+        uniqueSources.set(sourceId, {
+          title: match.title,
+          category: match.category,
+          score: match.score,
+          knowledgeEntryId: match.knowledgeEntryId,
+        });
+      }
+    });
+
+    const sources = [...uniqueSources.values()];
+
     return res.json({
       answer,
-      foundContext: true,
-      sources: relevantMatches.map((match) => ({
-        title: match.title,
-        category: match.category,
-        score: match.score,
-        knowledgeEntryId: match.knowledgeEntryId,
-      })),
+      foundContext: sources.length > 0,
+      sources,
     });
   } catch (error) {
-    console.error("Prism chat error:", error.message);
+    console.error("Prism chat error:", error);
 
     return res.status(500).json({
       message: "Prism couldn't generate a response. Please try again.",

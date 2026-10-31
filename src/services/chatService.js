@@ -15,5 +15,9 @@ export async function sendMessageToAI(message) {
     throw new Error(data.message || "Unable to get a response.");
   }
 
-  return data.answer;
+  return {
+    answer: data.answer,
+    foundContext: data.foundContext,
+    sources: data.sources || [],
+  };
 }

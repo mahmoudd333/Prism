@@ -5,7 +5,8 @@ import "./ChatWidget.css";
 const welcomeMessage = {
   id: 1,
   sender: "bot",
-  text: "Hi there! 👋 Welcome to our store. How can I help you today?",
+  text: "Hi there! Welcome to our store. How can I help you today?",
+  sources: [],
 };
 
 function ChatWidget() {
@@ -78,7 +79,7 @@ function ChatWidget() {
     setInput("");
 
     try {
-      const reply = await sendMessageToAI(messageText);
+      const result = await sendMessageToAI(messageText);
 
       if (currentRequest !== requestIdRef.current) return;
 
@@ -87,16 +88,20 @@ function ChatWidget() {
         {
           id: Date.now() + 1,
           sender: "bot",
-          text: reply,
+          text: result.answer,
+          sources: result.sources || [],
         },
       ]);
     } catch {
+      if (currentRequest !== requestIdRef.current) return;
+
       setMessages((previous) => [
         ...previous,
         {
           id: Date.now() + 1,
           sender: "bot",
           text: "Sorry, something went wrong. Please try again.",
+          sources: [],
         },
       ]);
     } finally {
@@ -111,7 +116,7 @@ function ChatWidget() {
     event.preventDefault();
     sendMessage(input);
   }
-  
+
   return (
     <>
       {isOpen && (
@@ -131,7 +136,6 @@ function ChatWidget() {
             </div>
 
             <div className="chat-header-actions">
-
               <button
                 className="chat-header-icon"
                 onClick={() => setIsOpen(false)}
@@ -160,14 +164,36 @@ function ChatWidget() {
                   <div className="chat-message-avatar">✦</div>
                 )}
 
-                <div
-                  className={`chat-message ${
-                    message.sender === "user"
-                      ? "chat-user-message"
-                      : "chat-bot-message"
-                  }`}
-                >
-                  {message.text}
+                <div className="chat-message-content">
+                  <div
+                    className={`chat-message ${
+                      message.sender === "user"
+                        ? "chat-user-message"
+                        : "chat-bot-message"
+                    }`}
+                  >
+                    {message.text}
+                  </div>
+
+                  {message.sender === "bot" &&
+                    message.sources?.length > 0 && (
+                      <div className="message-sources">
+                        <span className="sources-label">
+                          Sources
+                        </span>
+
+                        <div className="sources-list">
+                          {message.sources.map((source, index) => (
+                            <span
+                              className="source-reference"
+                              key={`${source.knowledgeEntryId || source.title}-${index}`}
+                            >
+                              {source.title}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                 </div>
               </div>
             ))}

@@ -358,3 +358,36 @@
     transition: none;
   }
 }
+
+.message-sources {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 9px;
+  max-width: 100%;
+}
+
+.sources-label {
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.sources-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.source-reference {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 9px;
+  border: 1px solid var(--purple-100);
+  border-radius: 8px;
+  background: #f8f4ff;
+  color: var(--purple-700);
+  font-size: 11px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
