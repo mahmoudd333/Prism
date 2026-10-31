@@ -26,6 +26,7 @@ app.get("/", (req, res) => {
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/knowledge", require("./routes/knowledgeBase"));
 app.use("/api/chat", require("./routes/chat"));
+app.use("/api/conversations", require("./routes/conversations"));
 
 app.get("/api/admin/verify", (req, res) => {
   const authorization = req.headers.authorization || "";

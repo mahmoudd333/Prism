@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { sendMessageToAI } from "../services/chatService";
+import {
+  sendMessageToAI,
+  getNewConversationMessages,
+} from "../services/chatService";
 import "./ChatWidget.css";
 
 const welcomeMessage = {
-  id: 1,
+  id: "welcome",
   sender: "bot",
   text: "Hi there! Welcome to our store. How can I help you today?",
   sources: [],
@@ -14,11 +17,16 @@ function ChatWidget() {
   const [messages, setMessages] = useState([welcomeMessage]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [conversationId, setConversationId] = useState(
+    () => localStorage.getItem("prismConversationId") || ""
+  );
 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const requestIdRef = useRef(0);
   const isTypingRef = useRef(false);
+  const lastMessageIdRef = useRef("");
+  const pollingRef = useRef(false);
 
   useEffect(() => {
     isTypingRef.current = isTyping;
@@ -50,12 +58,66 @@ function ChatWidget() {
     window.addEventListener("open-support-chat", handleOpenChat);
 
     return () => {
-      window.removeEventListener(
-        "open-support-chat",
-        handleOpenChat
-      );
+      window.removeEventListener("open-support-chat", handleOpenChat);
     };
   }, []);
+
+  useEffect(() => {
+    if (!conversationId) return;
+
+    let isMounted = true;
+
+    async function pollMessages() {
+      if (pollingRef.current) return;
+
+      pollingRef.current = true;
+
+      try {
+        const newMessages = await getNewConversationMessages(
+          conversationId,
+          lastMessageIdRef.current
+        );
+
+        if (!isMounted) return;
+
+        newMessages.forEach((message) => {
+          lastMessageIdRef.current = message.id;
+
+          if (message.sender === "Admin") {
+            setMessages((previous) => {
+              if (previous.some((item) => item.id === message.id)) {
+                return previous;
+              }
+
+              return [
+                ...previous,
+                {
+                  id: message.id,
+                  sender: "bot",
+                  text: message.text,
+                  sources: message.sources || [],
+                  isAdminReply: true,
+                },
+              ];
+            });
+          }
+        });
+      } catch (error) {
+        console.error("Unable to check for support replies:", error);
+      } finally {
+        pollingRef.current = false;
+      }
+    }
+
+    pollMessages();
+
+    const interval = setInterval(pollMessages, 3000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [conversationId]);
 
   async function sendMessage(text) {
     const messageText = text.trim();
@@ -70,7 +132,7 @@ function ChatWidget() {
     setMessages((previous) => [
       ...previous,
       {
-        id: Date.now(),
+        id: `customer-${currentRequest}`,
         sender: "user",
         text: messageText,
       },
@@ -79,28 +141,46 @@ function ChatWidget() {
     setInput("");
 
     try {
-      const result = await sendMessageToAI(messageText);
+      const result = await sendMessageToAI(
+        messageText,
+        conversationId
+      );
 
       if (currentRequest !== requestIdRef.current) return;
+
+      if (
+        result.conversationId &&
+        result.conversationId !== conversationId
+      ) {
+        setConversationId(result.conversationId);
+
+        localStorage.setItem(
+          "prismConversationId",
+          result.conversationId
+        );
+      }
 
       setMessages((previous) => [
         ...previous,
         {
-          id: Date.now() + 1,
+          id: `prism-${currentRequest}`,
           sender: "bot",
           text: result.answer,
           sources: result.sources || [],
+          handoffRequested: result.handoffRequested || false,
         },
       ]);
-    } catch {
+    } catch (error) {
       if (currentRequest !== requestIdRef.current) return;
 
       setMessages((previous) => [
         ...previous,
         {
-          id: Date.now() + 1,
+          id: `error-${currentRequest}`,
           sender: "bot",
-          text: "Sorry, something went wrong. Please try again.",
+          text:
+            error.message ||
+            "Sorry, something went wrong. Please try again.",
           sources: [],
         },
       ]);
@@ -165,6 +245,12 @@ function ChatWidget() {
                 )}
 
                 <div className="chat-message-content">
+                  {message.isAdminReply && (
+                    <span className="admin-reply-label">
+                      Support team
+                    </span>
+                  )}
+
                   <div
                     className={`chat-message ${
                       message.sender === "user"
@@ -194,6 +280,13 @@ function ChatWidget() {
                         </div>
                       </div>
                     )}
+
+                  {message.handoffRequested && (
+                    <div className="support-pending">
+                      Your question has been sent to our support team.
+                      A team member will reply here.
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
