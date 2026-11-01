@@ -465,13 +465,6 @@
   text-align: center;
 }
 
-.analytics-demo-note {
-  margin-top: 18px;
-  color: var(--text-secondary, #7d718d);
-  font-size: 12px;
-  line-height: 1.7;
-}
-
 .analytics-page button:focus-visible {
   outline: 3px solid var(--purple-200, #ddccff);
   outline-offset: 2px;

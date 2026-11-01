@@ -372,8 +372,7 @@ function KnowledgeBase({ onBack }) {
             <div className="knowledge-form-footer">
               <span>
                 {saving
-                  ? "Saving..."
-                  : "Entries are saved to MongoDB Atlas."}
+                  ? "Saving...": ""}
               </span>
               <button
                 className="knowledge-save-button"

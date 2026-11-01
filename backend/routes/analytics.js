@@ -2,8 +2,6 @@ const express = require("express");
 const Conversation = require("../models/Conversation");
 const QuestionEmbedding = require("../models/QuestionEmbedding");
 const requireAdmin = require("../middleware/auth");
-
-// Change this import if your embedding service has a different filename.
 const { createEmbeddings } = require("../services/ragService");
 
 const router = express.Router();

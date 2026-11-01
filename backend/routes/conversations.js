@@ -5,7 +5,6 @@ const requireAdmin = require("../middleware/auth");
 
 const router = express.Router();
 
-// Customer: retrieve new messages from an existing conversation.
 router.get("/:conversationId/messages", async (req, res) => {
   try {
     const { conversationId } = req.params;
@@ -44,10 +43,8 @@ router.get("/:conversationId/messages", async (req, res) => {
   }
 });
 
-// All routes below this point require an admin login.
 router.use(requireAdmin);
 
-// Admin: list conversations needing support.
 router.get("/unanswered", async (req, res) => {
   try {
     const conversations = await Conversation.find({
@@ -63,7 +60,6 @@ router.get("/unanswered", async (req, res) => {
   }
 });
 
-// Admin: list all conversations.
 router.get("/", async (req, res) => {
   try {
     const conversations = await Conversation.find()
@@ -77,7 +73,6 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Admin: get one conversation.
 router.get("/:conversationId", async (req, res) => {
   try {
     const conversation = await Conversation.findOne({
@@ -95,7 +90,6 @@ router.get("/:conversationId", async (req, res) => {
   }
 });
 
-// Admin: send a reply to the customer.
 router.post("/:conversationId/reply", async (req, res) => {
   try {
     const text =
@@ -137,7 +131,6 @@ router.post("/:conversationId/reply", async (req, res) => {
   }
 });
 
-// Admin: update conversation status.
 router.patch("/:conversationId/status", async (req, res) => {
   try {
     const allowedStatuses = ["Active", "Needs support", "Resolved"];

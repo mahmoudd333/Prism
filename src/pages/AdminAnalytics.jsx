@@ -555,12 +555,6 @@ function AdminAnalytics({ onBack }) {
             )}
           </>
         )}
-
-        <p className="analytics-demo-note">
-          Analytics are calculated from conversations currently stored in your
-          database. Common questions are grouped by AI based on semantic
-          similarity, and only questions asked at least twice are displayed.
-        </p>
       </section>
     </main>
   );
