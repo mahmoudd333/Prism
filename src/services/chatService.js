@@ -123,3 +123,23 @@ export async function updateConversationStatus(token, conversationId, status) {
 
   return data.conversation;
 }
+export async function getCommonQuestions(token) {
+  const response = await fetch(
+    `${API_URL}/api/analytics/common-questions`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data.message || "Unable to load common questions."
+    );
+  }
+
+  return data.questions || [];
+}

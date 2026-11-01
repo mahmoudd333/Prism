@@ -5,6 +5,7 @@ import {
   getAdminConversation,
   sendAdminReply,
   updateConversationStatus,
+  getCommonQuestions,
 } from "../services/chatService";
 
 function formatDate(date) {
@@ -25,6 +26,7 @@ function getConversationId(conversation) {
 
 function AdminAnalytics({ onBack }) {
   const [conversations, setConversations] = useState([]);
+  const [customerQuestions, setCustomerQuestions] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
@@ -48,9 +50,13 @@ function AdminAnalytics({ onBack }) {
       setLoading(true);
       setError("");
 
-      const loadedConversations = await getAdminConversations(token);
+      const [loadedConversations, loadedQuestions] = await Promise.all([
+        getAdminConversations(token),
+        getCommonQuestions(token),
+      ]);
 
       setConversations(loadedConversations);
+      setCustomerQuestions(loadedQuestions);
 
       if (loadedConversations.length > 0) {
         const currentId = selectedConversation
@@ -69,7 +75,7 @@ function AdminAnalytics({ onBack }) {
         setSelectedConversation(null);
       }
     } catch (err) {
-      setError(err.message || "Could not load conversations.");
+      setError(err.message || "Could not load analytics data.");
     } finally {
       setLoading(false);
     }
@@ -110,27 +116,6 @@ function AdminAnalytics({ onBack }) {
       return matchesStatus && searchableText.includes(term);
     });
   }, [conversations, search, statusFilter]);
-
-  const customerQuestions = useMemo(() => {
-    const questions = {};
-
-    conversations.forEach((conversation) => {
-      (conversation.messages || []).forEach((message) => {
-        if (message.sender === "Customer") {
-          const question = message.text.trim();
-
-          if (question) {
-            questions[question] = (questions[question] || 0) + 1;
-          }
-        }
-      });
-    });
-
-    return Object.entries(questions)
-      .map(([question, count]) => ({ question, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 5);
-  }, [conversations]);
 
   const unansweredQuestions = useMemo(() => {
     const questions = {};
@@ -319,7 +304,7 @@ function AdminAnalytics({ onBack }) {
                       <p>
                         {activeSection === "unanswered"
                           ? "Questions from conversations that need human support."
-                          : "Frequently asked questions from your stored conversations."}
+                          : "Frequently asked questions grouped by AI based on their meaning."}
                       </p>
                     </div>
                   </div>
@@ -350,7 +335,7 @@ function AdminAnalytics({ onBack }) {
                             <span>
                               {activeSection === "unanswered"
                                 ? "Needs knowledge base review"
-                                : "Customer question"}
+                                : "Similar customer questions grouped by meaning"}
                             </span>
                           </div>
 
@@ -573,7 +558,8 @@ function AdminAnalytics({ onBack }) {
 
         <p className="analytics-demo-note">
           Analytics are calculated from conversations currently stored in your
-          database. Common questions are grouped by exact matching text.
+          database. Common questions are grouped by AI based on semantic
+          similarity, and only questions asked at least twice are displayed.
         </p>
       </section>
     </main>
