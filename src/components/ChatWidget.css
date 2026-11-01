@@ -418,3 +418,21 @@
   font-size: 12px;
   line-height: 1.5;
 }
+
+.chat-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chat-header-icon:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.chat-history-loading {
+  text-align: center;
+  padding: 12px;
+  color: #8b7b9f;
+  font-size: 12px;
+}

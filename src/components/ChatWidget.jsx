@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   sendMessageToAI,
   getNewConversationMessages,
@@ -12,11 +12,22 @@ const welcomeMessage = {
   sources: [],
 };
 
+function formatMessage(message) {
+  return {
+    id: message.id,
+    sender: message.sender === "Customer" ? "user" : "bot",
+    text: message.text,
+    sources: message.sources || [],
+    isAdminReply: message.sender === "Admin",
+  };
+}
+
 function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([welcomeMessage]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [isHistoryLoading, setIsHistoryLoading] = useState(false);
   const [conversationId, setConversationId] = useState(
     () => localStorage.getItem("prismConversationId") || ""
   );
@@ -27,6 +38,7 @@ function ChatWidget() {
   const isTypingRef = useRef(false);
   const lastMessageIdRef = useRef("");
   const pollingRef = useRef(false);
+  const sendMessageRef = useRef(null);
 
   useEffect(() => {
     isTypingRef.current = isTyping;
@@ -44,6 +56,83 @@ function ChatWidget() {
     }
   }, [isOpen]);
 
+  const sendMessage = useCallback(
+    async (text) => {
+      const messageText = text.trim();
+
+      if (!messageText || isTypingRef.current || isHistoryLoading) return;
+
+      const currentRequest = ++requestIdRef.current;
+
+      isTypingRef.current = true;
+      setIsTyping(true);
+
+      setMessages((previous) => [
+        ...previous,
+        {
+          id: `customer-${currentRequest}`,
+          sender: "user",
+          text: messageText,
+        },
+      ]);
+
+      setInput("");
+
+      try {
+        const result = await sendMessageToAI(
+          messageText,
+          conversationId
+        );
+
+        if (currentRequest !== requestIdRef.current) return;
+
+        if (result.conversationId) {
+          setConversationId(result.conversationId);
+
+          localStorage.setItem(
+            "prismConversationId",
+            result.conversationId
+          );
+        }
+
+        setMessages((previous) => [
+          ...previous,
+          {
+            id: `prism-${currentRequest}`,
+            sender: "bot",
+            text: result.answer,
+            sources: result.sources || [],
+            handoffRequested: result.handoffRequested || false,
+          },
+        ]);
+      } catch (error) {
+        if (currentRequest !== requestIdRef.current) return;
+
+        setMessages((previous) => [
+          ...previous,
+          {
+            id: `error-${currentRequest}`,
+            sender: "bot",
+            text:
+              error.message ||
+              "Sorry, something went wrong. Please try again.",
+            sources: [],
+          },
+        ]);
+      } finally {
+        if (currentRequest === requestIdRef.current) {
+          isTypingRef.current = false;
+          setIsTyping(false);
+        }
+      }
+    },
+    [conversationId, isHistoryLoading]
+  );
+
+  useEffect(() => {
+    sendMessageRef.current = sendMessage;
+  }, [sendMessage]);
+
   useEffect(() => {
     function handleOpenChat(event) {
       setIsOpen(true);
@@ -51,7 +140,7 @@ function ChatWidget() {
       const suggestedMessage = event.detail?.message;
 
       if (suggestedMessage) {
-        sendMessage(suggestedMessage);
+        sendMessageRef.current?.(suggestedMessage);
       }
     }
 
@@ -63,12 +152,51 @@ function ChatWidget() {
   }, []);
 
   useEffect(() => {
-    if (!conversationId) return;
+    if (!conversationId) {
+      setMessages([welcomeMessage]);
+      lastMessageIdRef.current = "";
+      setIsHistoryLoading(false);
+      return;
+    }
 
     let isMounted = true;
+    let interval;
+
+    async function loadConversation() {
+      setIsHistoryLoading(true);
+      lastMessageIdRef.current = "";
+
+      try {
+        const history = await getNewConversationMessages(
+          conversationId,
+          ""
+        );
+
+        if (!isMounted) return;
+
+        const formattedMessages = history.map(formatMessage);
+
+        setMessages(
+          formattedMessages.length > 0
+            ? [welcomeMessage, ...formattedMessages]
+            : [welcomeMessage]
+        );
+
+        if (history.length > 0) {
+          lastMessageIdRef.current = history[history.length - 1].id;
+        }
+      } catch (error) {
+        console.error("Unable to restore conversation:", error);
+        setMessages([welcomeMessage]);
+      } finally {
+        if (isMounted) {
+          setIsHistoryLoading(false);
+        }
+      }
+    }
 
     async function pollMessages() {
-      if (pollingRef.current) return;
+      if (pollingRef.current || !isMounted) return;
 
       pollingRef.current = true;
 
@@ -83,24 +211,13 @@ function ChatWidget() {
         newMessages.forEach((message) => {
           lastMessageIdRef.current = message.id;
 
-          if (message.sender === "Admin") {
-            setMessages((previous) => {
-              if (previous.some((item) => item.id === message.id)) {
-                return previous;
-              }
+          setMessages((previous) => {
+            if (previous.some((item) => item.id === message.id)) {
+              return previous;
+            }
 
-              return [
-                ...previous,
-                {
-                  id: message.id,
-                  sender: "bot",
-                  text: message.text,
-                  sources: message.sources || [],
-                  isAdminReply: true,
-                },
-              ];
-            });
-          }
+            return [...previous, formatMessage(message)];
+          });
         });
       } catch (error) {
         console.error("Unable to check for support replies:", error);
@@ -109,9 +226,15 @@ function ChatWidget() {
       }
     }
 
-    pollMessages();
+    async function initializeConversation() {
+      await loadConversation();
 
-    const interval = setInterval(pollMessages, 3000);
+      if (!isMounted) return;
+
+      interval = setInterval(pollMessages, 3000);
+    }
+
+    initializeConversation();
 
     return () => {
       isMounted = false;
@@ -119,77 +242,19 @@ function ChatWidget() {
     };
   }, [conversationId]);
 
-  async function sendMessage(text) {
-    const messageText = text.trim();
+  function handleNewConversation() {
+    if (isTypingRef.current || isHistoryLoading) return;
 
-    if (!messageText || isTypingRef.current) return;
+    requestIdRef.current += 1;
+    isTypingRef.current = false;
+    setIsTyping(false);
 
-    const currentRequest = ++requestIdRef.current;
+    localStorage.removeItem("prismConversationId");
 
-    isTypingRef.current = true;
-    setIsTyping(true);
-
-    setMessages((previous) => [
-      ...previous,
-      {
-        id: `customer-${currentRequest}`,
-        sender: "user",
-        text: messageText,
-      },
-    ]);
-
+    lastMessageIdRef.current = "";
+    setConversationId("");
+    setMessages([welcomeMessage]);
     setInput("");
-
-    try {
-      const result = await sendMessageToAI(
-        messageText,
-        conversationId
-      );
-
-      if (currentRequest !== requestIdRef.current) return;
-
-      if (
-        result.conversationId &&
-        result.conversationId !== conversationId
-      ) {
-        setConversationId(result.conversationId);
-
-        localStorage.setItem(
-          "prismConversationId",
-          result.conversationId
-        );
-      }
-
-      setMessages((previous) => [
-        ...previous,
-        {
-          id: `prism-${currentRequest}`,
-          sender: "bot",
-          text: result.answer,
-          sources: result.sources || [],
-          handoffRequested: result.handoffRequested || false,
-        },
-      ]);
-    } catch (error) {
-      if (currentRequest !== requestIdRef.current) return;
-
-      setMessages((previous) => [
-        ...previous,
-        {
-          id: `error-${currentRequest}`,
-          sender: "bot",
-          text:
-            error.message ||
-            "Sorry, something went wrong. Please try again.",
-          sources: [],
-        },
-      ]);
-    } finally {
-      if (currentRequest === requestIdRef.current) {
-        isTypingRef.current = false;
-        setIsTyping(false);
-      }
-    }
   }
 
   function handleSubmit(event) {
@@ -218,6 +283,16 @@ function ChatWidget() {
             <div className="chat-header-actions">
               <button
                 className="chat-header-icon"
+                onClick={handleNewConversation}
+                disabled={isTyping || isHistoryLoading}
+                aria-label="Start a new conversation"
+                title="New conversation"
+              >
+                +
+              </button>
+
+              <button
+                className="chat-header-icon"
                 onClick={() => setIsOpen(false)}
                 aria-label="Close chat"
               >
@@ -230,6 +305,12 @@ function ChatWidget() {
             <div className="chat-date-divider">
               YOUR CONVERSATION
             </div>
+
+            {isHistoryLoading && (
+              <div className="chat-history-loading">
+                Loading conversation...
+              </div>
+            )}
 
             {messages.map((message) => (
               <div
@@ -317,13 +398,15 @@ function ChatWidget() {
               onChange={(event) => setInput(event.target.value)}
               placeholder="Type your message..."
               aria-label="Type your message"
-              disabled={isTyping}
+              disabled={isTyping || isHistoryLoading}
             />
 
             <button
               type="submit"
               className="chat-send-button"
-              disabled={!input.trim() || isTyping}
+              disabled={
+                !input.trim() || isTyping || isHistoryLoading
+              }
               aria-label="Send message"
             >
               <svg
