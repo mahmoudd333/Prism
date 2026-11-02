@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:5000";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 export async function sendMessageToAI(message, conversationId) {
   const response = await fetch(`${API_URL}/api/chat`, {
@@ -123,6 +123,7 @@ export async function updateConversationStatus(token, conversationId, status) {
 
   return data.conversation;
 }
+
 export async function getCommonQuestions(token) {
   const response = await fetch(
     `${API_URL}/api/analytics/common-questions`,
