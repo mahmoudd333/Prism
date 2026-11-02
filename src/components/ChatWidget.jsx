@@ -1,23 +1,44 @@
-import { useEffect, useRef, useState } from "react";
-import { sendMessageToAI } from "../services/chatService";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  sendMessageToAI,
+  getNewConversationMessages,
+} from "../services/chatService";
 import "./ChatWidget.css";
 
 const welcomeMessage = {
-  id: 1,
+  id: "welcome",
   sender: "bot",
-  text: "Hi there! 👋 Welcome to our store. How can I help you today?",
+  text: "Hi there! Welcome to our store. How can I help you today?",
+  sources: [],
 };
+
+function formatMessage(message) {
+  return {
+    id: message.id,
+    sender: message.sender === "Customer" ? "user" : "bot",
+    text: message.text,
+    sources: message.sources || [],
+    isAdminReply: message.sender === "Admin",
+  };
+}
 
 function ChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([welcomeMessage]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [isHistoryLoading, setIsHistoryLoading] = useState(false);
+  const [conversationId, setConversationId] = useState(
+    () => localStorage.getItem("prismConversationId") || ""
+  );
 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const requestIdRef = useRef(0);
   const isTypingRef = useRef(false);
+  const lastMessageIdRef = useRef("");
+  const pollingRef = useRef(false);
+  const sendMessageRef = useRef(null);
 
   useEffect(() => {
     isTypingRef.current = isTyping;
@@ -35,6 +56,83 @@ function ChatWidget() {
     }
   }, [isOpen]);
 
+  const sendMessage = useCallback(
+    async (text) => {
+      const messageText = text.trim();
+
+      if (!messageText || isTypingRef.current || isHistoryLoading) return;
+
+      const currentRequest = ++requestIdRef.current;
+
+      isTypingRef.current = true;
+      setIsTyping(true);
+
+      setMessages((previous) => [
+        ...previous,
+        {
+          id: `customer-${currentRequest}`,
+          sender: "user",
+          text: messageText,
+        },
+      ]);
+
+      setInput("");
+
+      try {
+        const result = await sendMessageToAI(
+          messageText,
+          conversationId
+        );
+
+        if (currentRequest !== requestIdRef.current) return;
+
+        if (result.conversationId) {
+          setConversationId(result.conversationId);
+
+          localStorage.setItem(
+            "prismConversationId",
+            result.conversationId
+          );
+        }
+
+        setMessages((previous) => [
+          ...previous,
+          {
+            id: `prism-${currentRequest}`,
+            sender: "bot",
+            text: result.answer,
+            sources: result.sources || [],
+            handoffRequested: result.handoffRequested || false,
+          },
+        ]);
+      } catch (error) {
+        if (currentRequest !== requestIdRef.current) return;
+
+        setMessages((previous) => [
+          ...previous,
+          {
+            id: `error-${currentRequest}`,
+            sender: "bot",
+            text:
+              error.message ||
+              "Sorry, something went wrong. Please try again.",
+            sources: [],
+          },
+        ]);
+      } finally {
+        if (currentRequest === requestIdRef.current) {
+          isTypingRef.current = false;
+          setIsTyping(false);
+        }
+      }
+    },
+    [conversationId, isHistoryLoading]
+  );
+
+  useEffect(() => {
+    sendMessageRef.current = sendMessage;
+  }, [sendMessage]);
+
   useEffect(() => {
     function handleOpenChat(event) {
       setIsOpen(true);
@@ -42,76 +140,128 @@ function ChatWidget() {
       const suggestedMessage = event.detail?.message;
 
       if (suggestedMessage) {
-        sendMessage(suggestedMessage);
+        sendMessageRef.current?.(suggestedMessage);
       }
     }
 
     window.addEventListener("open-support-chat", handleOpenChat);
 
     return () => {
-      window.removeEventListener(
-        "open-support-chat",
-        handleOpenChat
-      );
+      window.removeEventListener("open-support-chat", handleOpenChat);
     };
   }, []);
 
-  async function sendMessage(text) {
-    const messageText = text.trim();
+  useEffect(() => {
+    if (!conversationId) {
+      setMessages([welcomeMessage]);
+      lastMessageIdRef.current = "";
+      setIsHistoryLoading(false);
+      return;
+    }
 
-    if (!messageText || isTypingRef.current) return;
+    let isMounted = true;
+    let interval;
 
-    const currentRequest = ++requestIdRef.current;
+    async function loadConversation() {
+      setIsHistoryLoading(true);
+      lastMessageIdRef.current = "";
 
-    isTypingRef.current = true;
-    setIsTyping(true);
+      try {
+        const history = await getNewConversationMessages(
+          conversationId,
+          ""
+        );
 
-    setMessages((previous) => [
-      ...previous,
-      {
-        id: Date.now(),
-        sender: "user",
-        text: messageText,
-      },
-    ]);
+        if (!isMounted) return;
 
-    setInput("");
+        const formattedMessages = history.map(formatMessage);
 
-    try {
-      const reply = await sendMessageToAI(messageText);
+        setMessages(
+          formattedMessages.length > 0
+            ? [welcomeMessage, ...formattedMessages]
+            : [welcomeMessage]
+        );
 
-      if (currentRequest !== requestIdRef.current) return;
-
-      setMessages((previous) => [
-        ...previous,
-        {
-          id: Date.now() + 1,
-          sender: "bot",
-          text: reply,
-        },
-      ]);
-    } catch {
-      setMessages((previous) => [
-        ...previous,
-        {
-          id: Date.now() + 1,
-          sender: "bot",
-          text: "Sorry, something went wrong. Please try again.",
-        },
-      ]);
-    } finally {
-      if (currentRequest === requestIdRef.current) {
-        isTypingRef.current = false;
-        setIsTyping(false);
+        if (history.length > 0) {
+          lastMessageIdRef.current = history[history.length - 1].id;
+        }
+      } catch (error) {
+        console.error("Unable to restore conversation:", error);
+        setMessages([welcomeMessage]);
+      } finally {
+        if (isMounted) {
+          setIsHistoryLoading(false);
+        }
       }
     }
+
+    async function pollMessages() {
+      if (pollingRef.current || !isMounted) return;
+
+      pollingRef.current = true;
+
+      try {
+        const newMessages = await getNewConversationMessages(
+          conversationId,
+          lastMessageIdRef.current
+        );
+
+        if (!isMounted) return;
+
+        newMessages.forEach((message) => {
+          lastMessageIdRef.current = message.id;
+
+          setMessages((previous) => {
+            if (previous.some((item) => item.id === message.id)) {
+              return previous;
+            }
+
+            return [...previous, formatMessage(message)];
+          });
+        });
+      } catch (error) {
+        console.error("Unable to check for support replies:", error);
+      } finally {
+        pollingRef.current = false;
+      }
+    }
+
+    async function initializeConversation() {
+      await loadConversation();
+
+      if (!isMounted) return;
+
+      interval = setInterval(pollMessages, 3000);
+    }
+
+    initializeConversation();
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [conversationId]);
+
+  function handleNewConversation() {
+    if (isTypingRef.current || isHistoryLoading) return;
+
+    requestIdRef.current += 1;
+    isTypingRef.current = false;
+    setIsTyping(false);
+
+    localStorage.removeItem("prismConversationId");
+
+    lastMessageIdRef.current = "";
+    setConversationId("");
+    setMessages([welcomeMessage]);
+    setInput("");
   }
 
   function handleSubmit(event) {
     event.preventDefault();
     sendMessage(input);
   }
-  
+
   return (
     <>
       {isOpen && (
@@ -131,6 +281,15 @@ function ChatWidget() {
             </div>
 
             <div className="chat-header-actions">
+              <button
+                className="chat-header-icon"
+                onClick={handleNewConversation}
+                disabled={isTyping || isHistoryLoading}
+                aria-label="Start a new conversation"
+                title="New conversation"
+              >
+                +
+              </button>
 
               <button
                 className="chat-header-icon"
@@ -147,6 +306,12 @@ function ChatWidget() {
               YOUR CONVERSATION
             </div>
 
+            {isHistoryLoading && (
+              <div className="chat-history-loading">
+                Loading conversation...
+              </div>
+            )}
+
             {messages.map((message) => (
               <div
                 key={message.id}
@@ -160,14 +325,49 @@ function ChatWidget() {
                   <div className="chat-message-avatar">✦</div>
                 )}
 
-                <div
-                  className={`chat-message ${
-                    message.sender === "user"
-                      ? "chat-user-message"
-                      : "chat-bot-message"
-                  }`}
-                >
-                  {message.text}
+                <div className="chat-message-content">
+                  {message.isAdminReply && (
+                    <span className="admin-reply-label">
+                      Support team
+                    </span>
+                  )}
+
+                  <div
+                    className={`chat-message ${
+                      message.sender === "user"
+                        ? "chat-user-message"
+                        : "chat-bot-message"
+                    }`}
+                  >
+                    {message.text}
+                  </div>
+
+                  {message.sender === "bot" &&
+                    message.sources?.length > 0 && (
+                      <div className="message-sources">
+                        <span className="sources-label">
+                          Sources
+                        </span>
+
+                        <div className="sources-list">
+                          {message.sources.map((source, index) => (
+                            <span
+                              className="source-reference"
+                              key={`${source.knowledgeEntryId || source.title}-${index}`}
+                            >
+                              {source.title}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                  {message.handoffRequested && (
+                    <div className="support-pending">
+                      Your question has been sent to our support team.
+                      A team member will reply here.
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
@@ -198,13 +398,15 @@ function ChatWidget() {
               onChange={(event) => setInput(event.target.value)}
               placeholder="Type your message..."
               aria-label="Type your message"
-              disabled={isTyping}
+              disabled={isTyping || isHistoryLoading}
             />
 
             <button
               type="submit"
               className="chat-send-button"
-              disabled={!input.trim() || isTyping}
+              disabled={
+                !input.trim() || isTyping || isHistoryLoading
+              }
               aria-label="Send message"
             >
               <svg

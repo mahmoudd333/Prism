@@ -2,34 +2,22 @@ import ChatWidget from "../components/ChatWidget";
 import "./HomePage.css";
 
 const helpTopics = [
-  {
-    title: "Orders & tracking",
-    description: "Get help finding your order information.",
-    message: "How can I track my order?",
-  },
-  {
-    title: "Shipping",
-    description: "Learn about delivery and shipping fees.",
-    message: "Tell me about shipping.",
-  },
-  {
-    title: "Returns & refunds",
-    description: "Learn about returns and refund policies.",
-    message: "What is your return policy?",
-  },
-  {
-    title: "Products",
-    description: "Ask questions about products and prices.",
-    message: "Tell me about your products.",
-  },
+  "Orders & tracking",
+  "Shipping",
+  "Returns & refunds",
+  "Products",
 ];
 
 function HomePage({ onSignIn }) {
+  const openChat = () => {
+    window.dispatchEvent(new Event("open-support-chat"));
+  };
+
   return (
     <main className="home-page">
       <header className="site-header">
         <a className="brand" href="/" aria-label="Prism home">
-          <span className="brand-icon">✦</span>
+          <span className="brand-icon">P</span>
 
           <span className="brand-copy">
             <strong>Prism</strong>
@@ -38,13 +26,7 @@ function HomePage({ onSignIn }) {
         </a>
 
         <nav className="site-nav" aria-label="Main navigation">
-          <a href="#home">Home</a>
-          <a href="#help">Help center</a>
-          <a href="#about">About</a>
-          <button
-            className="sign-in-button"
-            onClick={onSignIn}
-          >
+          <button className="sign-in-button" onClick={onSignIn}>
             Sign in
           </button>
         </nav>
@@ -53,7 +35,6 @@ function HomePage({ onSignIn }) {
       <section className="hero-section" id="home">
         <div className="hero-content">
           <span className="hero-eyebrow">
-            <span className="hero-sparkle">✦</span>
             YOUR PERSONAL SUPPORT ASSISTANT
           </span>
 
@@ -69,14 +50,7 @@ function HomePage({ onSignIn }) {
             our support assistant.
           </p>
 
-          <button
-            className="primary-button"
-            onClick={() =>
-              window.dispatchEvent(
-                new Event("open-support-chat")
-              )
-            }
-          >
+          <button className="primary-button" onClick={openChat}>
             Start a conversation
             <span aria-hidden="true">↗</span>
           </button>
@@ -90,66 +64,39 @@ function HomePage({ onSignIn }) {
         <div className="hero-art" aria-hidden="true">
           <div className="art-orbit orbit-one" />
           <div className="art-orbit orbit-two" />
+          <div className="art-orbit orbit-three" />
 
-          <div className="art-card">
-            <div className="art-card-icon">✦</div>
-            <div>
-              <strong>How can I help?</strong>
-              <p>I'm here whenever you need me.</p>
-            </div>
+          <div className="art-center">
+            <div className="art-center-inner" />
           </div>
 
-          <div className="art-bubble bubble-one">
-            Track my order
-          </div>
-
-          <div className="art-bubble bubble-two">
-            Of course! Let's get started.
-          </div>
-
-          <div className="art-center">✦</div>
+          <span className="art-dot dot-one" />
+          <span className="art-dot dot-two" />
+          <span className="art-dot dot-three" />
         </div>
       </section>
 
       <section className="help-section" id="help">
         <div className="section-heading">
           <span>HERE FOR YOU</span>
-          <h2>What can I help you with?</h2>
+          <h2>We're here to make things easier.</h2>
           <p>
-            Choose a topic to get started, or ask us anything
-            using the chat assistant.
+            From finding your order to learning about our products,
+            get the support you need in one place.
           </p>
         </div>
 
-        <div className="help-grid">
+        <div className="help-topics">
           {helpTopics.map((topic) => (
-            <button
-              className="help-card"
-              key={topic.title}
-              onClick={() =>
-                window.dispatchEvent(
-                  new CustomEvent("open-support-chat", {
-                    detail: { message: topic.message },
-                  })
-                )
-              }
-            >
-              <span className="help-card-title">
-                {topic.title}
-              </span>
-
-              <span className="help-card-description">
-                {topic.description}
-              </span>
-
-              <span className="help-card-arrow">↗</span>
-            </button>
+            <span className="help-topic" key={topic}>
+              {topic}
+            </span>
           ))}
         </div>
       </section>
 
       <section className="contact-section" id="about">
-        <div className="contact-icon">✦</div>
+        <div className="contact-icon">P</div>
 
         <div className="contact-copy">
           <h2>Need a little more help?</h2>
@@ -159,21 +106,14 @@ function HomePage({ onSignIn }) {
           </p>
         </div>
 
-        <button
-          className="secondary-button"
-          onClick={() =>
-            window.dispatchEvent(
-              new Event("open-support-chat")
-            )
-          }
-        >
+        <button className="secondary-button" onClick={openChat}>
           Chat with us
         </button>
       </section>
 
       <footer className="site-footer">
         <a className="footer-brand" href="#home">
-          ✦ Prism
+          Prism
         </a>
         <span>Here to make things easier.</span>
       </footer>

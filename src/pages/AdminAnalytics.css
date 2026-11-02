@@ -465,13 +465,6 @@
   text-align: center;
 }
 
-.analytics-demo-note {
-  margin-top: 18px;
-  color: var(--text-secondary, #7d718d);
-  font-size: 12px;
-  line-height: 1.7;
-}
-
 .analytics-page button:focus-visible {
   outline: 3px solid var(--purple-200, #ddccff);
   outline-offset: 2px;
@@ -542,4 +535,57 @@
   .analytics-question-count {
     font-size: 12px;
   }
+}
+.admin-reply-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.admin-reply-form textarea {
+  width: 100%;
+  min-height: 90px;
+  padding: 12px;
+  border: 1px solid #e2d9ed;
+  border-radius: 10px;
+  font: inherit;
+  resize: vertical;
+}
+
+.admin-reply-form button {
+  align-self: flex-end;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  background: var(--purple-600);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.admin-reply-form button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.conversation-message {
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  border-radius: 10px;
+  background: #f7f5fa;
+}
+
+.conversation-message p {
+  margin: 6px 0;
+  white-space: pre-wrap;
+}
+
+.conversation-message small {
+  color: #777;
+  font-size: 11px;
+}
+
+.conversation-message.admin {
+  background: #f1eafd;
 }

@@ -511,3 +511,8 @@
     transition: none;
   }
 }
+
+.knowledge-upload-zone:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
