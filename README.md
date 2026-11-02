@@ -1,16 +1,42 @@
-# React + Vite
+# Prism – AI E-Commerce Customer Support Chatbot
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Prism is an AI-powered customer support chatbot designed for e-commerce stores. It allows customers to ask questions about products, shipping, returns, and store policies. Store administrators can manage the knowledge base, review customer conversations, and respond to customers when human support is needed.
 
-Currently, two official plugins are available:
+The chatbot uses Retrieval-Augmented Generation (RAG) to provide answers based on information stored in the store's knowledge base.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Features
 
-## React Compiler
+### Customer Support
+- Interactive customer chat widget.
+- AI-generated answers based on the store's knowledge base.
+- Retrieval-Augmented Generation (RAG) with source references.
+- Conversation history stored in the database.
+- Human support handoff when additional assistance is needed.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Admin Dashboard
+- Secure administrator login.
+- Manage FAQ, policy, and product information.
+- Upload documents to the knowledge base.
+- Store knowledge base entries in MongoDB Atlas.
+- View customer conversations and respond to customers.
+- View analytics, including common customer questions and unanswered queries.
 
-## Expanding the ESLint configuration
+## Technologies Used
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- **Frontend:** React, Vite, JavaScript, CSS
+- **Backend:** Node.js, Express.js
+- **Database:** MongoDB Atlas
+- **AI:** Google Gemini API
+- **RAG:** Text chunking, embeddings, and vector search
+
+
+## RAG Workflow
+
+1. The administrator adds FAQs, policies, product information, or documents to the knowledge base.
+2. The backend processes the content and divides it into smaller text chunks.
+3. Gemini generates embeddings for the text chunks.
+4. The embeddings are stored in MongoDB Atlas and retrieved using vector search.
+5. When a customer asks a question, Prism retrieves relevant knowledge base content.
+6. The AI uses the retrieved information to generate an answer and provide source references.
+
+
