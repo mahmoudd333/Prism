@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import "./KnowledgeBase.css";
 
 const categories = ["FAQ", "Policy", "Product"];
-const API_URL = "http://localhost:5000";
+const API_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 function KnowledgeBase({ onBack }) {
   const [activeTab, setActiveTab] = useState("FAQ");
