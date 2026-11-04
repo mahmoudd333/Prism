@@ -7,7 +7,7 @@ const { createEmbeddings } = require("../services/ragService");
 const router = express.Router();
 
 const MIN_QUESTION_COUNT = 2;
-const SIMILARITY_THRESHOLD = 0.78;
+const SIMILARITY_THRESHOLD = 0.88;
 
 function normalizeQuestion(text) {
   return text
