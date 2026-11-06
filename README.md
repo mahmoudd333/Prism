@@ -21,7 +21,7 @@ The chatbot uses Retrieval-Augmented Generation (RAG) to provide answers based o
 - View customer conversations and respond to customers.
 - View analytics, including common customer questions and unanswered queries.
 
-### architecture diagram
+### Architecture Diagram
 
 Prism has two separate frontend routes: one for customers and another for administrators.
 
