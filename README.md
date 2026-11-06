@@ -94,17 +94,17 @@ The following steps explain how to test the administrator features.
 
 ### 2. Test Knowledge Base Management
 
-1.Open the Knowledge Base section from the Admin Dashboard.
+1. Open the Knowledge Base section from the Admin Dashboard.
 
-2.Add an FAQ by entering a question and its answer.
+2. Add an FAQ by entering a question and its answer.
 
-3.Switch to the Policy tab and add a policy.
+3. Switch to the Policy tab and add a policy.
 
-4.Switch to the Product tab and add product information.
+4. Switch to the Product tab and add product information.
 
-5.Test document uploades.
+5. Test document uploades.
 
-6.Verify that saved entries appear in the knowledge base.
+6. Verify that saved entries appear in the knowledge base.
 
 ### 3. Test AI Customer Support and Human Handoff
 
