@@ -29,6 +29,13 @@ app.get("/", (req, res) => {
   res.json({ message: "Prism backend is running!" });
 });
 
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "OK",
+    message: "Prism backend is awake",
+  });
+});
+
 app.use("/api/auth", require("./routes/auth"));
 app.use("/api/knowledge", require("./routes/knowledgeBase"));
 app.use("/api/chat", require("./routes/chat"));
